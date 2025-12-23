@@ -1,0 +1,57 @@
+import numpy as np
+
+# Grid size
+rows, cols = 3, 3
+states = [(i, j) for i in range(rows) for j in range(cols)]
+
+# Rewards
+goal_state = (2, 2)
+obstacles = [(1, 1)]
+
+rewards = {}
+for s in states:
+    if s == goal_state:
+        rewards[s] = 5
+    elif s in obstacles:
+        rewards[s] = -2
+    else:
+        rewards[s] = 0
+
+# Actions
+actions = ['up', 'down', 'left', 'right']
+policy = {s: {a: 0.25 for a in actions} for s in states}
+
+gamma = 0.9
+theta = 0.001
+V = {s: 0 for s in states}
+
+def next_state(state, action):
+    i, j = state
+    if action == 'up':
+        i = max(i - 1, 0)
+    elif action == 'down':
+        i = min(i + 1, rows - 1)
+    elif action == 'left':
+        j = max(j - 1, 0)
+    elif action == 'right':
+        j = min(j + 1, cols - 1)
+    return (i, j)
+
+# Policy Evaluation
+while True:
+    delta = 0
+    for s in states:
+        v = V[s]
+        new_v = 0
+        for a in actions:
+            s_next = next_state(s, a)
+            r = rewards[s_next]
+            new_v += policy[s][a] * (r + gamma * V[s_next])
+        V[s] = new_v
+        delta = max(delta, abs(v - new_v))
+    if delta < theta:
+        break
+
+print("Value Function:")
+for s in V:
+    print(s, ":", round(V[s], 2))
